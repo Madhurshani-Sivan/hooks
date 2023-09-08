@@ -25,15 +25,23 @@ const ingredientReducer = (currentIngredients, action) => {
 const Ingredients = () => {
   const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
 
-  const { isLoading, error, data, sendRequest } = useHttp();
+  const { isLoading, error, data, sendRequest, reqExtra, reqIdentifier } =
+    useHttp();
 
   /* const [userIngredients, setUserIngrediants] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(); */
 
   useEffect(() => {
-    console.log("Rendering ingrdients", userIngredients);
-  }, [userIngredients]);
+    if (!isLoading && !error && reqIdentifier === "REMOVE_INGREDIENT") {
+      dispatch({ type: "DELETE", id: reqExtra });
+    } else if (!isLoading && !error && reqIdentifier === "ADD_INGREDIENT") {
+      dispatch({
+        type: "ADD",
+        ingredient: { id: data.name, ...reqExtra },
+      });
+    }
+  }, [data, reqExtra, reqIdentifier, isLoading, error]);
 
   const filteredIngredientsHandler = useCallback((filteredIngredients) => {
     // setUserIngrediants(filteredIngredients);
@@ -41,6 +49,13 @@ const Ingredients = () => {
   }, []);
 
   const addIngredientHandler = useCallback((ingredient) => {
+    sendRequest(
+      "https://react-hooks-update-ed11d-default-rtdb.firebaseio.com/ingredients.json",
+      "POST",
+      JSON.stringify(ingredient),
+      ingredient,
+      "ADD_INGREDIENT"
+    );
     /* dispatchHttp({ type: "SEND" });
     fetch(
       "https://react-hooks-update-ed11d-default-rtdb.firebaseio.com/ingredients.json",
@@ -70,7 +85,10 @@ const Ingredients = () => {
     (id) => {
       sendRequest(
         `https://react-hooks-update-ed11d-default-rtdb.firebaseio.com/ingredients/${id}.json`,
-        "DELETE"
+        "DELETE",
+        null,
+        id,
+        "REMOVE_INGREDIENT"
       );
     },
     [sendRequest]
