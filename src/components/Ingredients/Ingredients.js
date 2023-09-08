@@ -26,6 +26,10 @@ const Ingredients = () => {
       });
   }, []);
 
+  useEffect(() => {
+    console.log("Rendering ingrdients", userIngredients);
+  }, [userIngredients]);
+
   const addIngredientHandler = (ingredient) => {
     fetch(
       "https://react-hooks-update-ed11d-default-rtdb.firebaseio.com/ingredients.json",
